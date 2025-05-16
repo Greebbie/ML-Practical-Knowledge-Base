@@ -1,18 +1,21 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request
 import numpy as np
 import pandas as pd
 from content import load_topic_content
 import os
 
-# 检测是否在 Vercel 环境中运行
-in_vercel = os.environ.get('VERCEL') == '1'
+# Determine if running on Vercel
+IS_VERCEL = os.environ.get('VERCEL') == '1'
 
-if in_vercel:
-    # Vercel 环境中，static_folder 设置不生效，而是通过 vercel.json 的路由规则处理
-    app = Flask(__name__, static_url_path=None)
+if IS_VERCEL:
+    # On Vercel, Flask should not handle static files.
+    # Vercel's routing rules (in vercel.json) will serve them from the 'public' directory.
+    app = Flask(__name__)
 else:
-    # 本地环境中，使用标准 Flask 静态文件处理
-    app = Flask(__name__, static_url_path='/static', static_folder='static')
+    # For local development, Flask needs to serve static files.
+    # The 'public' directory is at the project root, so relative to 'api/index.py',
+    # the static folder is '../public'. The URL path remains '/static'.
+    app = Flask(__name__, static_url_path='/static', static_folder='../public/static')
 
 # Content structure
 topics = {
@@ -116,7 +119,13 @@ def home():
 
 @app.route('/topic/<topic_name>')
 def topic_page(topic_name):
-    content = load_topic_content(topic_name)
+    # Ensure content loading doesn't break if 'content.py' isn't fully implemented
+    try:
+        content_data = load_topic_content(topic_name)
+    except Exception as e:
+        print(f"Error loading topic content for {topic_name}: {e}")
+        content_data = f"Content for {topic_name} is not yet available."
+    
     summary = "This is a detailed explanation of the topic with practical examples and implementations."
     questions = [
         {
@@ -130,10 +139,10 @@ def topic_page(topic_name):
             "hint": "Consider scalability and efficiency"
         }
     ]
-    return render_template('topic.html', 
-                         content=content, 
-                         summary=summary, 
-                         questions=questions, 
+    return render_template('topic.html',
+                         content=content_data,
+                         summary=summary,
+                         questions=questions,
                          topic_name=topic_name)
 
 def generate_questions(topic):
@@ -143,5 +152,5 @@ def generate_questions(topic):
     """
     pass
 
-# This is important for Vercel
-app = app 
+# No app.run() here for Vercel; local_dev.py handles local execution.
+# The 'app' variable is picked up by Vercel automatically from api/index.py 
