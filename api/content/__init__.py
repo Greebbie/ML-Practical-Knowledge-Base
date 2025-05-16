@@ -68,7 +68,15 @@ def load_topic_content(topic_name):
     """
     A simple placeholder function that returns content for a given topic.
     """
-    # Create a basic placeholder
+    from . import topics
+    
+    # Try to load the topic using the topics module
+    try:
+        return topics.load_topic_content(topic_name)
+    except Exception as e:
+        print(f"Error loading topic content: {e}")
+    
+    # Create a basic placeholder for other topics
     return {
         'section': [
             {

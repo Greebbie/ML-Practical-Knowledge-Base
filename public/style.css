@@ -303,6 +303,7 @@ body {
     border: 1px solid var(--border-light);
     border-radius: var(--border-radius);
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .concept-header {
@@ -311,11 +312,17 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
+    transition: background-color 0.2s;
+}
+
+.concept-header:hover {
+    background-color: #e4edff;
 }
 
 .concept-header i {
     margin-right: 10px;
     color: var(--primary-medium);
+    font-size: 0.9rem;
 }
 
 .concept-header h3 {
@@ -325,17 +332,24 @@ body {
     flex-grow: 1;
 }
 
+.expand-icon {
+    color: var(--primary-medium);
+    font-size: 0.9rem;
+    min-width: 12px;
+    text-align: center;
+}
+
 .concept-content {
     padding: 0;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s, padding 0.3s;
+    transition: max-height 0.5s ease-out, padding 0.3s;
 }
 
 .active .concept-content {
     padding: 15px;
     max-height: 2000px;
-    transition: max-height 0.5s, padding 0.3s;
+    transition: max-height 0.9s ease-in, padding 0.3s;
 }
 
 /* Topic Page Sections */
@@ -373,12 +387,13 @@ body {
 /* Math Equations */
 .formula {
     background-color: #f8f8fc;
-    padding: 12px 15px;
+    padding: 15px 20px;
     border-radius: var(--border-radius);
     margin: 15px 0;
     overflow-x: auto;
     font-family: 'Times New Roman', Times, serif;
     border-left: 3px solid var(--primary-light);
+    text-align: center;
 }
 
 /* Code Blocks */
@@ -392,6 +407,7 @@ body {
     overflow-x: auto;
     line-height: 1.45;
     margin: 15px 0;
+    font-size: 0.9rem;
 }
 
 .code-block .keyword {
@@ -656,6 +672,7 @@ body {
     box-shadow: var(--shadow);
     margin-top: 30px;
     overflow: hidden;
+    margin-bottom: 25px;
 }
 
 .implementation-header {
@@ -677,7 +694,7 @@ body {
 }
 
 .implementation-content {
-    padding: 0;
+    padding: 15px;
 }
 
 /* Responsive Design */
@@ -709,4 +726,20 @@ body {
     display: block;
     margin: 1em 0;
     text-align: center;
+}
+
+/* Example block styling */
+.example-block {
+    background-color: #f0f8ff;
+    padding: 12px 15px;
+    border-radius: var(--border-radius);
+    margin: 15px 0;
+    border-left: 3px solid #64b5f6;
+}
+
+.example-block h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    color: var(--primary-dark);
+    font-size: 1rem;
 } 
