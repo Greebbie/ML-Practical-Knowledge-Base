@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI/ML Learning Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .topic-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+
+        .topic-card .card-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .concept-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .concept-link:hover {
+            color: var(--secondary-color);
+        }
+
+        .concept-link i {
+            font-size: 0.8rem;
+            color: var(--secondary-color);
+        }
+
+        .subtopic-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .subtopic-title i {
+            font-size: 1rem;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 1rem 1rem;
+        }
+
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Consolas', monospace;
+            margin: 1rem 0;
+        }
+        
+        /* For LaTeX formulas */
+        .formula-block {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-cpu"></i> ML Practical Knowledge Base
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="bi bi-book"></i> Resources</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="bi bi-code-square"></i> Code Examples</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% if topics %}
+    <div class="page-header">
+        <div class="container">
+            <h1 class="display-4">ML Practical Knowledge Base</h1>
+            <p class="lead">Your comprehensive resource for machine learning theory, implementation, and industry applications</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="container mt-4">
+        {% if topics %}
+        <div class="row">
+            {% for main_topic, subtopics in topics.items() %}
+            <div class="col-md-4 mb-4">
+                <div class="topic-card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="bi bi-diagram-3"></i>
+                            {{ main_topic|replace('_', ' ')|title }}
+                        </h5>
+                        {% for subtopic, concepts in subtopics.items() %}
+                        <div class="subtopic-title">
+                            <i class="bi bi-arrow-right-circle"></i>
+                            {{ subtopic|replace('_', ' ')|title }}
+                        </div>
+                        <ul class="list-unstyled">
+                            {% for concept in concepts %}
+                            <li class="mb-2">
+                                <a href="{{ url_for('topic_page', topic_name=concept|lower|replace(' ', '_')) }}" 
+                                   class="concept-link">
+                                    <i class="bi bi-chevron-right"></i>
+                                    {{ concept }}
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        {% block content %}{% endblock %}
+        {% endif %}
+    </div>
+
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>ML Practical Knowledge Base</h5>
+                    <p>Advanced concepts and practical implementations for AI/ML practitioners</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>Built with ❤️ for the AI/ML community</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

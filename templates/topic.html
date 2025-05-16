@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none">Home</a></li>
+                    <li class="breadcrumb-item active">{{ topic_name|title }}</li>
+                </ol>
+            </nav>
+
+            <h1 class="mb-4">{{ topic_name|title }}</h1>
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-info-circle"></i> Overview
+                    </h5>
+                    <p class="card-text">{{ summary }}</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-lightbulb"></i> Core Concepts
+                    </h5>
+                    <div class="accordion" id="conceptsAccordion">
+                        {% for concept in content.section %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ loop.index }}">
+                                <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" 
+                                        type="button" 
+                                        data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse{{ loop.index }}">
+                                    <i class="bi bi-check-circle text-success me-2"></i>
+                                    {{ concept.title }}
+                                </button>
+                            </h2>
+                            <div id="collapse{{ loop.index }}" 
+                                 class="accordion-collapse collapse {% if loop.first %}show{% endif %}" 
+                                 data-bs-parent="#conceptsAccordion">
+                                <div class="accordion-body">
+                                    <div class="concept-content">
+                                        {{ concept.description|safe }}
+                                    </div>
+                                    {% if concept.formula %}
+                                    <div class="formula-block mt-3">
+                                        <h6 class="text-primary">Mathematical Formula:</h6>
+                                        <div class="latex-formula">
+                                            {{ concept.formula|safe }}
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    {% if concept.example %}
+                                    <div class="example-block mt-3">
+                                        <h6 class="text-primary">Example:</h6>
+                                        <p>{{ concept.example }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            {% if content.implementation %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-code-square"></i> Implementation
+                    </h5>
+                    <div class="code-block">
+                        <pre><code>{{ content.implementation }}</code></pre>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if content.interview_examples %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-briefcase"></i> Interview Examples
+                    </h5>
+                    {% for example in content.interview_examples %}
+                    <div class="mb-3">
+                        <h6 class="text-primary">{{ example.title }}</h6>
+                        <p>{{ example.description }}</p>
+                        <div class="code-block">
+                            <pre><code>{{ example.code }}</code></pre>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-question-circle"></i> Practice Questions
+                    </h5>
+                    <ol class="list-group list-group-numbered">
+                        {% for question in questions %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>{{ question.text }}</span>
+                                {% if question.difficulty %}
+                                <span class="badge bg-{{ question.difficulty }}">{{ question.difficulty|title }}</span>
+                                {% endif %}
+                            </div>
+                            {% if question.hint %}
+                            <div class="mt-2 text-muted">
+                                <small><i class="bi bi-lightbulb"></i> Hint: {{ question.hint }}</small>
+                            </div>
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-book"></i> Related Resources
+                    </h5>
+                    <ul class="list-group list-group-flush">
+                        {% for resource in content.resources %}
+                        <li class="list-group-item">
+                            <a href="{{ resource.url }}" class="text-decoration-none" target="_blank">
+                                <i class="bi bi-link-45deg"></i> {{ resource.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-diagram-3"></i> Related Topics
+                    </h5>
+                    <ul class="list-group list-group-flush">
+                        {% for topic in content.related_topics %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('topic_page', topic_name=topic|lower|replace(' ', '_')) }}" 
+                               class="text-decoration-none">
+                                <i class="bi bi-arrow-right"></i> {{ topic }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
