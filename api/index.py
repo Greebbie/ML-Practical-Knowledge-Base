@@ -1,10 +1,6 @@
 from flask import Flask, render_template, request
 import numpy as np
 import pandas as pd
-from transformers import pipeline
-import torch
-import torch.nn as nn
-import math
 from content import load_topic_content
 
 app = Flask(__name__)
