@@ -346,7 +346,7 @@ def visualize_attention(model, tokenizer, sentence, layer_idx=0, head_idx=0):
                 "description": "Optimizing attention computation for long sequences using the Flash Attention approach.",
                 "code": """
 def flash_attention(Q, K, V, mask=None, chunk_size=4096):
-    """
+    \"\"\"
     Memory-efficient attention implementation for long sequences.
     Processes attention in chunks to reduce memory usage.
     
@@ -354,7 +354,7 @@ def flash_attention(Q, K, V, mask=None, chunk_size=4096):
         Q, K, V: Query, Key, Value tensors (batch_size, seq_len, d_k)
         mask: Optional mask tensor (batch_size, seq_len, seq_len)
         chunk_size: Size of chunks to process at once
-    """
+    \"\"\"
     batch_size, seq_len, d_k = Q.size()
     
     # Initialize output and attention weights
