@@ -25,12 +25,9 @@ except ImportError:
 # Determine if running on Vercel
 IS_VERCEL = os.environ.get('VERCEL') == '1'
 
-if IS_VERCEL:
-    # On Vercel, explicitly set the static folder and URL path
-    app = Flask(__name__, static_folder='../public/static', static_url_path='/static')
-else:
-    # For local development
-    app = Flask(__name__, static_url_path='/static', static_folder='../public/static')
+# Simple Flask app configuration
+# We're letting Vercel handle static files through the routes in vercel.json
+app = Flask(__name__)
 
 # Content structure
 topics = {

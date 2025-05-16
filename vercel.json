@@ -10,14 +10,18 @@
       }
     },
     {
-      "src": "public/static/**",
+      "src": "public/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/public/static/$1"
+      "src": "/favicon.ico",
+      "dest": "/public/favicon.ico"
+    },
+    {
+      "src": "/style.css",
+      "dest": "/public/style.css"
     },
     {
       "src": "/(.*)",
