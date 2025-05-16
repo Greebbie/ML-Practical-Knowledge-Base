@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request
 import numpy as np
 import pandas as pd
-from content import load_topic_content
 import os
+# Import from the local content.py file
+from content import load_topic_content
 
 # Determine if running on Vercel
 IS_VERCEL = os.environ.get('VERCEL') == '1'
@@ -126,6 +127,10 @@ def topic_page(topic_name):
         print(f"Error loading topic content for {topic_name}: {e}")
         content_data = f"Content for {topic_name} is not yet available."
     
+    # If content_data is a string (simple output), use it directly
+    # If it's a dictionary (structured content), pass it to the template
+    is_structured = isinstance(content_data, dict)
+    
     summary = "This is a detailed explanation of the topic with practical examples and implementations."
     questions = [
         {
@@ -141,6 +146,7 @@ def topic_page(topic_name):
     ]
     return render_template('topic.html',
                          content=content_data,
+                         is_structured=is_structured,
                          summary=summary,
                          questions=questions,
                          topic_name=topic_name)

@@ -3,6 +3,31 @@
 <head>
     <title>{{ topic_name|replace('_', ' ')|title }} - ML Knowledge Base</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .code-block {
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .formula {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 3px solid #ccc;
+            font-style: italic;
+        }
+        .resource-link {
+            display: block;
+            margin: 5px 0;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .resource-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -11,7 +36,55 @@
         
         <div class="content">
             <h2>Content</h2>
-            <p>{{ content }}</p>
+            {% if is_structured %}
+                {% for section_item in content.section %}
+                    <div class="section-item">
+                        <h3>{{ section_item.title }}</h3>
+                        <div>{{ section_item.description|safe }}</div>
+                        
+                        {% if section_item.formula %}
+                            <div class="formula">{{ section_item.formula }}</div>
+                        {% endif %}
+                        
+                        {% if section_item.implementation %}
+                            <div class="code-block">{{ section_item.implementation }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                {% if content.interview_examples %}
+                    <h3>Interview Questions</h3>
+                    {% for example in content.interview_examples %}
+                        <div class="question">
+                            <h4>{{ example.title }}</h4>
+                            <p>{{ example.description }}</p>
+                            {% if example.code %}
+                                <div class="code-block">{{ example.code }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if content.resources %}
+                    <h3>Resources</h3>
+                    <ul>
+                        {% for resource in content.resources %}
+                            <li><a href="{{ resource.url }}" class="resource-link" target="_blank">{{ resource.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                
+                {% if content.related_topics %}
+                    <h3>Related Topics</h3>
+                    <ul>
+                        {% for topic in content.related_topics %}
+                            <li>{{ topic }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% else %}
+                <p>{{ content }}</p>
+            {% endif %}
         </div>
 
         <div class="content">
