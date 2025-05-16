@@ -1,206 +1,202 @@
-from flask import Flask, render_template, request
-import numpy as np
-import pandas as pd
 import os
-import importlib.util
 import sys
+import random
+import traceback
+from flask import Flask, render_template, redirect, url_for, request, abort, send_from_directory, jsonify
 
-# Dynamic import of content module - works in both local and Vercel environments
+# Add content module import, handle both local and Vercel environments
 try:
-    # First try direct import (works locally)
-    from content import load_topic_content
+    from api.content import load_content, load_topic_content
 except ImportError:
     try:
-        # Then try package-style import (may work on Vercel)
-        from api.content import load_topic_content
+        # For local development
+        sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from content import load_content, load_topic_content
     except ImportError:
-        # Finally, try loading the module directly from the file path
-        content_path = os.path.join(os.path.dirname(__file__), "content.py")
-        spec = importlib.util.spec_from_file_location("content", content_path)
-        content = importlib.util.module_from_spec(spec)
-        sys.modules["content"] = content
-        spec.loader.exec_module(content)
-        load_topic_content = content.load_topic_content
+        # Fallback
+        from api.content import load_content, load_topic_content
 
-# Determine if running on Vercel
-IS_VERCEL = os.environ.get('VERCEL') == '1'
-
-# Simple Flask app configuration
-# We're letting Vercel handle static files through the routes in vercel.json
 app = Flask(__name__)
 
-# Content structure
+# Configure app to serve static files from the public directory
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('public', 'favicon.ico')
+
+@app.route('/style.css')
+def css():
+    return send_from_directory('public', 'style.css')
+
+# Define the topic structure
 topics = {
-    'deep_learning': {
-        'fundamentals': [
-            'Neural Networks',
-            'Backpropagation',
-            'Activation Functions',
-            'Loss Functions',
-            'Optimization Algorithms'
-        ],
-        'architectures': [
-            'CNNs',
-            'RNNs',
-            'Transformers',
-            'GANs',
-            'Autoencoders'
-        ],
-        'advanced': [
-            'Transfer Learning',
-            'Few-shot Learning',
-            'Meta Learning',
-            'Neural Architecture Search',
-            'Model Compression'
-        ]
+    "deep_learning": {
+        "fundamentals": ["Neural Networks", "Backpropagation", "Activation Functions", "Loss Functions", "Optimization Algorithms"],
+        "architectures": ["CNNs", "RNNs", "Transformers", "GANs", "Autoencoders"],
+        "advanced": ["Transfer Learning", "Few-shot Learning", "Meta Learning", "Neural Architecture Search", "Model Compression"]
     },
-    'machine_learning': {
-        'supervised': [
-            'Linear Regression',
-            'SVM',
-            'Decision Trees',
-            'Random Forests',
-            'Gradient Boosting'
-        ],
-        'unsupervised': [
-            'Clustering',
-            'Dimensionality Reduction',
-            'Anomaly Detection',
-            'Association Rules',
-            'Topic Modeling'
-        ],
-        'reinforcement': [
-            'Q-Learning',
-            'Policy Gradients',
-            'Multi-agent Systems',
-            'Deep RL',
-            'Inverse RL'
-        ]
+    "machine_learning": {
+        "supervised": ["Linear Regression", "SVM", "Decision Trees", "Random Forests", "Gradient Boosting"],
+        "unsupervised": ["Clustering", "Dimensionality Reduction", "Anomaly Detection", "Association Rules", "Topic Modeling"],
+        "reinforcement": ["Q-Learning", "Policy Gradients", "Multi-agent Systems", "Deep RL", "Inverse RL"]
     },
-    'modern_ai': {
-        'llms': [
-            'Transformer Architecture',
-            'Attention Mechanisms',
-            'Fine-tuning Techniques',
-            'LoRA Implementation',
-            'Prompt Engineering'
-        ],
-        'computer_vision': [
-            'Object Detection',
-            'Image Segmentation',
-            'Video Understanding',
-            '3D Vision',
-            'Neural Rendering'
-        ],
-        'multimodal': [
-            'Vision-Language Models',
-            'Audio-Visual Learning',
-            'Cross-modal Retrieval',
-            'Multimodal Fusion',
-            'Zero-shot Learning'
-        ]
+    "modern_ai": {
+        "llms": ["Transformer Architecture", "Attention Mechanisms", "Fine-tuning Techniques", "LoRA Implementation", "Prompt Engineering"],
+        "computer_vision": ["Object Detection", "Image Segmentation", "Video Understanding", "3D Vision", "Neural Rendering"],
+        "multimodal": ["Vision-Language Models", "Audio-Visual Learning", "Cross-modal Retrieval", "Multimodal Fusion", "Zero-shot Learning"]
     },
-    'math_foundations': {
-        'linear_algebra': [
-            'Matrices',
-            'Eigenvectors',
-            'Vector Spaces',
-            'Matrix Decomposition',
-            'Tensor Operations'
-        ],
-        'calculus': [
-            'Gradients',
-            'Chain Rule',
-            'Optimization',
-            'Vector Calculus',
-            'Numerical Methods'
-        ],
-        'probability': [
-            'Distributions',
-            'Bayesian Methods',
-            'Information Theory',
-            'Statistical Inference',
-            'Stochastic Processes'
-        ]
+    "math_foundations": {
+        "linear_algebra": ["Matrices", "Vectors", "Eigenvalues", "SVD", "Vector Spaces"]
     }
 }
 
+# Define routes
 @app.route('/')
 def home():
     try:
-        return render_template('base.html', topics=topics)
+        return render_template('index.html', topics=topics)
     except Exception as e:
-        # Return a simple response instead of crashing with 500
-        import traceback
-        error_message = f"Error rendering homepage: {str(e)}\n{traceback.format_exc()}"
-        print(error_message)  # This will appear in Vercel logs
-        return f"""
-        <html>
-        <head><title>ML Knowledge Base - Error</title></head>
-        <body>
-            <h1>Something went wrong</h1>
-            <p>The application encountered an error. Please try again later.</p>
-            <pre>{error_message}</pre>
-        </body>
-        </html>
-        """
+        app.logger.error(f"Error rendering home page: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return f"Error rendering page: {str(e)}", 500
 
 @app.route('/topic/<topic_name>')
-def topic_page(topic_name):
+def topic(topic_name):
     try:
-        # Ensure content loading doesn't break if 'content.py' isn't fully implemented
+        # Load topic content
+        content = load_content(topic_name)
+        if not content:
+            return render_template('error.html', message=f"Topic '{topic_name}' not found"), 404
+        
+        # Generate questions related to the topic
+        questions = generate_questions(topic_name, 3)
+        
+        # Try to get interview examples and related topics
+        interview_examples = []
+        related_topics = []
+        resources = []
+        
+        # Try to load from old format if needed
         try:
-            content_data = load_topic_content(topic_name)
-        except Exception as e:
-            print(f"Error loading topic content for {topic_name}: {e}")
-            content_data = f"Content for {topic_name} is not yet available."
+            old_content = load_topic_content(topic_name)
+            if isinstance(old_content, dict):
+                interview_examples = old_content.get('interview_examples', [])
+                related_topics = old_content.get('related_topics', [])
+                
+                # Use resources from old format if available
+                if 'resources' in old_content:
+                    resources = [
+                        {"title": item['title'], "url": item['url']} 
+                        for item in old_content['resources']
+                    ]
+        except Exception:
+            pass
         
-        # If content_data is a string (simple output), use it directly
-        # If it's a dictionary (structured content), pass it to the template
-        is_structured = isinstance(content_data, dict)
+        # If no resources were set yet, use example resources
+        if not resources:
+            resources = [
+                {"title": f"Official {topic_name.replace('_', ' ').title()} Documentation", "url": f"https://docs.example.com/{topic_name}"},
+                {"title": f"Tutorial: Understanding {topic_name.replace('_', ' ').title()}", "url": f"https://tutorials.example.com/{topic_name}"},
+                {"title": f"Research Paper on {topic_name.replace('_', ' ').title()}", "url": f"https://papers.example.com/{topic_name}.pdf"}
+            ]
         
-        summary = "This is a detailed explanation of the topic with practical examples and implementations."
-        questions = [
-            {
-                "text": "What is the key concept behind this topic?",
-                "difficulty": "easy",
-                "hint": "Think about the fundamental principles"
-            },
-            {
-                "text": "How would you implement this in a production environment?",
-                "difficulty": "hard",
-                "hint": "Consider scalability and efficiency"
-            }
-        ]
-        return render_template('topic.html',
-                            content=content_data,
-                            is_structured=is_structured,
-                            summary=summary,
-                            questions=questions,
-                            topic_name=topic_name)
+        # Format title
+        title = topic_name.replace('_', ' ').title()
+        
+        return render_template('topic.html', 
+                              title=title,
+                              content=content,
+                              questions=questions,
+                              resources=resources,
+                              interview_examples=interview_examples,
+                              related_topics=related_topics)
+    
     except Exception as e:
-        # Return a simple response instead of crashing with 500
-        import traceback
-        error_message = f"Error rendering topic page for {topic_name}: {str(e)}\n{traceback.format_exc()}"
-        print(error_message)  # This will appear in Vercel logs
-        return f"""
-        <html>
-        <head><title>ML Knowledge Base - Error</title></head>
-        <body>
-            <h1>Something went wrong</h1>
-            <p>The application encountered an error while loading topic: {topic_name}</p>
-            <p>Please try again later or <a href="/">return to homepage</a>.</p>
-            <pre>{error_message}</pre>
-        </body>
-        </html>
-        """
+        app.logger.error(f"Error rendering topic {topic_name}: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        return f"Error loading topic: {str(e)}", 500
 
-def generate_questions(topic):
-    """
-    Generate domain-specific questions based on topic
-    Can be implemented using GPT-3/LLMs or custom templates
-    """
-    pass
+@app.route('/resources')
+def resources():
+    try:
+        return render_template('resources.html')
+    except Exception as e:
+        return f"Error loading resources: {str(e)}", 500
 
-# No app.run() here for Vercel; local_dev.py handles local execution.
-# The 'app' variable is picked up by Vercel automatically from api/index.py 
+@app.route('/code')
+def code_examples():
+    try:
+        return render_template('code_examples.html')
+    except Exception as e:
+        return f"Error loading code examples: {str(e)}", 500
+
+# Helper functions
+def generate_questions(topic, count=3):
+    """Generate domain-specific questions based on the topic."""
+    questions = []
+    
+    # Dictionary of questions for different domains
+    domain_questions = {
+        "neural_networks": [
+            {"question": "Explain how backpropagation works in a neural network", "difficulty": "Medium", 
+             "math": "\\frac{\\partial L}{\\partial w_{ij}} = \\frac{\\partial L}{\\partial y_j} \\frac{\\partial y_j}{\\partial w_{ij}}",
+             "hint": "Think about the chain rule from calculus"},
+            {"question": "How does vanishing gradient problem affect deep networks?", "difficulty": "Hard",
+             "hint": "Consider what happens to gradients in very deep networks with certain activation functions"},
+            {"question": "Implement a simple feedforward neural network using NumPy", "difficulty": "Hard", 
+             "hint": "Break it down into initialization, forward pass, and backward pass",
+             "code": "import numpy as np\n\ndef sigmoid(x):\n    return 1 / (1 + np.exp(-x))\n\ndef sigmoid_derivative(x):\n    return x * (1 - x)\n\nclass NeuralNetwork:\n    def __init__(self, x, y):\n        self.input = x\n        self.weights1 = np.random.rand(self.input.shape[1], 4)\n        self.weights2 = np.random.rand(4, 1)\n        self.y = y\n        self.output = np.zeros(y.shape)\n\n    def feedforward(self):\n        self.layer1 = sigmoid(np.dot(self.input, self.weights1))\n        self.output = sigmoid(np.dot(self.layer1, self.weights2))\n\n    def backprop(self):\n        d_weights2 = np.dot(self.layer1.T, 2 * (self.y - self.output) * sigmoid_derivative(self.output))\n        d_weights1 = np.dot(self.input.T, np.dot(2 * (self.y - self.output) * sigmoid_derivative(self.output), \n                                                self.weights2.T) * sigmoid_derivative(self.layer1))\n\n        self.weights1 += d_weights1\n        self.weights2 += d_weights2"},
+        ],
+        "transformers": [
+            {"question": "Explain the multi-head attention mechanism in transformers", "difficulty": "Hard", 
+             "math": "\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V",
+             "hint": "Think about why multiple attention heads are better than just one"},
+            {"question": "How does positional encoding work in transformers?", "difficulty": "Medium",
+             "hint": "Consider how transformers need position information since they have no recurrence or convolution"},
+            {"question": "Why is layer normalization important in transformer architectures?", "difficulty": "Medium",
+             "hint": "Think about training stability and convergence"}
+        ],
+        "linear_regression": [
+            {"question": "Derive the normal equation for linear regression", "difficulty": "Medium", 
+             "math": "\\hat{\\beta} = (X^TX)^{-1}X^Ty",
+             "hint": "Think about minimizing the sum of squared errors"},
+            {"question": "Explain the difference between L1 and L2 regularization", "difficulty": "Easy",
+             "hint": "Consider their effects on the model parameters and feature selection"},
+            {"question": "Implement linear regression with gradient descent", "difficulty": "Medium", 
+             "hint": "Remember to compute the gradient of the cost function",
+             "code": "import numpy as np\n\ndef gradient_descent(X, y, learning_rate=0.01, iterations=1000):\n    m = len(y)\n    theta = np.zeros(X.shape[1])\n    cost_history = []\n    \n    for i in range(iterations):\n        prediction = np.dot(X, theta)\n        error = prediction - y\n        cost = (1/(2*m)) * np.sum(error**2)\n        cost_history.append(cost)\n        \n        # Update theta\n        theta = theta - (learning_rate/m) * np.dot(X.T, error)\n    \n    return theta, cost_history"}
+        ],
+    }
+    
+    # Map the URL topic_name to the domain questions
+    domain_mapping = {
+        "neural_networks": "neural_networks",
+        "backpropagation": "neural_networks",
+        "activation_functions": "neural_networks",
+        "transformers": "transformers",
+        "attention_mechanisms": "transformers",
+        "transformer_architecture": "transformers",
+        "linear_regression": "linear_regression",
+    }
+    
+    # Convert topic with underscores and handle case
+    topic_key = topic.lower().replace(' ', '_')
+    
+    if topic_key in domain_mapping:
+        question_pool = domain_questions[domain_mapping[topic_key]]
+        # Return all questions if count is greater than available questions
+        return random.sample(question_pool, min(count, len(question_pool)))
+    
+    # Generic questions if specific domain is not found
+    generic_questions = [
+        {"question": f"Explain the core concepts of {topic.replace('_', ' ').title()}", "difficulty": "Easy",
+         "hint": "Think about the fundamental principles"},
+        {"question": f"What are the practical applications of {topic.replace('_', ' ').title()}?", "difficulty": "Medium",
+         "hint": "Consider both academic and industry use cases"},
+        {"question": f"How would you implement this in a production environment?", "difficulty": "Hard",
+         "hint": "Consider scalability and efficiency"}
+    ]
+    
+    return random.sample(generic_questions, min(count, len(generic_questions)))
+
+if __name__ == "__main__":
+    app.run(debug=True) 

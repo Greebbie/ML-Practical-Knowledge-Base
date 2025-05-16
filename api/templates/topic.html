@@ -1,82 +1,192 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>{{ topic_name|replace('_', ' ')|title }} - ML Knowledge Base</title>
-    {% include 'head.html' %}
-</head>
-<body>
-    <div class="container">
-        <a href="/" class="back-link">← Back to Home</a>
-        <h1>{{ topic_name|replace('_', ' ')|title }}</h1>
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - ML Practical Knowledge Base{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <div class="breadcrumb-content">
+        <a href="/">Home</a>
+        <span>/</span>
+        <span>{{ title }}</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="content-layout">
+    <!-- Main Content -->
+    <div class="content-main">
+        <h1>{{ title }}</h1>
         
-        <div class="content">
-            <h2>Content</h2>
-            {% if is_structured %}
-                {% for section_item in content.section %}
-                    <div class="section-item">
-                        <h3>{{ section_item.title }}</h3>
-                        <div>{{ section_item.description|safe }}</div>
-                        
-                        {% if section_item.formula %}
-                            <div class="formula">{{ section_item.formula }}</div>
-                        {% endif %}
-                        
-                        {% if section_item.implementation %}
-                            <div class="code-block">{{ section_item.implementation }}</div>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-                
-                {% if content.interview_examples %}
-                    <h3>Interview Questions</h3>
-                    {% for example in content.interview_examples %}
-                        <div class="question">
-                            <h4>{{ example.title }}</h4>
-                            <p>{{ example.description }}</p>
-                            {% if example.code %}
-                                <div class="code-block">{{ example.code }}</div>
+        <!-- Overview Section -->
+        <div class="topic-section">
+            <div class="section-header">
+                <i class="fas fa-info-circle"></i>
+                <h2>Overview</h2>
+            </div>
+            <div class="section-content">
+                <p>{{ content[0].description|safe }}</p>
+            </div>
+        </div>
+        
+        <!-- Core Concepts Section -->
+        <div class="topic-section">
+            <div class="section-header">
+                <i class="fas fa-lightbulb"></i>
+                <h2>Core Concepts</h2>
+            </div>
+            <div class="section-content">
+                <ul class="concept-list">
+                    {% for section in content %}
+                    {% if section.subsections %}
+                    {% for subsection in section.subsections %}
+                    <li class="concept-item">
+                        <div class="concept-header">
+                            <i class="fas fa-circle"></i>
+                            <h3>{{ subsection.title }}</h3>
+                            <span class="expand-icon">▶</span>
+                        </div>
+                        <div class="concept-content">
+                            {{ subsection.content|safe }}
+                            
+                            {% if subsection.math %}
+                            <div class="formula">
+                                $$ {{ subsection.math }} $$
+                            </div>
+                            {% endif %}
+                            
+                            {% if subsection.code %}
+                            <div class="code-block">
+{{ subsection.code }}
+                            </div>
                             {% endif %}
                         </div>
+                    </li>
                     {% endfor %}
-                {% endif %}
-                
-                {% if content.resources %}
-                    <h3>Resources</h3>
-                    <ul>
-                        {% for resource in content.resources %}
-                            <li><a href="{{ resource.url }}" class="resource-link" target="_blank">{{ resource.title }}</a></li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-                
-                {% if content.related_topics %}
-                    <h3>Related Topics</h3>
-                    <ul>
-                        {% for topic in content.related_topics %}
-                            <li>{{ topic }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            {% else %}
-                <p>{{ content }}</p>
-            {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
-
-        <div class="content">
-            <h2>Summary</h2>
-            <p>{{ summary }}</p>
+        
+        <!-- Implementation Section -->
+        <div class="implementation-section">
+            <div class="implementation-header">
+                <i class="fas fa-code"></i>
+                <h2>Implementation</h2>
+            </div>
+            <div class="implementation-content">
+                {% for section in content %}
+                {% if section.title == 'Implementation Approaches' %}
+                {% for subsection in section.subsections %}
+                {% if subsection.code %}
+                <div class="code-block">
+{{ subsection.code }}
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                {% endfor %}
+            </div>
         </div>
-
-        <div class="questions">
+        
+        <!-- Interview Examples Section -->
+        {% if interview_examples %}
+        <div class="interview-section">
+            <div class="interview-header">
+                <i class="fas fa-comments"></i>
+                <h2>Interview Examples</h2>
+            </div>
+            <div class="interview-content">
+                {% for example in interview_examples %}
+                <div class="interview-item">
+                    <h3>{{ example.title }}</h3>
+                    <p>{{ example.description }}</p>
+                    {% if example.code %}
+                    <div class="code-block">
+{{ example.code }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Practice Questions Section -->
+        {% if questions %}
+        <div class="questions-section">
             <h2>Practice Questions</h2>
+            
             {% for question in questions %}
             <div class="question">
-                <h3>{{ question.text }}</h3>
-                <span class="difficulty {{ question.difficulty }}">{{ question.difficulty|title }}</span>
-                <p><strong>Hint:</strong> {{ question.hint }}</p>
+                <h3>
+                    {{ loop.index }}. 
+                    {{ question.question }}
+                    <span class="difficulty {{ question.difficulty|lower }}">{{ question.difficulty }}</span>
+                </h3>
+                
+                {% if question.hint %}
+                <div class="hint">
+                    <strong>Hint:</strong> {{ question.hint }}
+                </div>
+                {% endif %}
+                
+                {% if question.math %}
+                <div class="formula">
+                    $$ {{ question.math }} $$
+                </div>
+                {% endif %}
+                
+                {% if question.code %}
+                <div class="code-block">
+{{ question.code }}
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
+        {% endif %}
     </div>
-</body>
-</html> 
+    
+    <!-- Sidebar -->
+    <div class="content-sidebar">
+        <!-- Related Resources -->
+        <div class="related-card">
+            <div class="related-card-header">
+                <h3><i class="fas fa-book"></i> Related Resources</h3>
+            </div>
+            <div class="related-card-content">
+                {% if resources %}
+                {% for resource in resources %}
+                <a href="{{ resource.url }}" target="_blank">{{ resource.title }}</a>
+                {% endfor %}
+                {% else %}
+                <a href="#" target="_blank">Original {{ title }} Paper</a>
+                <a href="#" target="_blank">{{ title }} - Explained</a>
+                <a href="#" target="_blank">The Annotated {{ title }}</a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Related Topics -->
+        <div class="related-card">
+            <div class="related-card-header">
+                <h3><i class="fas fa-sitemap"></i> Related Topics</h3>
+            </div>
+            <div class="related-card-content">
+                {% if related_topics %}
+                {% for topic in related_topics %}
+                <a href="/topic/{{ topic|lower|replace(' ', '_') }}">{{ topic }}</a>
+                {% endfor %}
+                {% else %}
+                <a href="/topic/attention_mechanisms">Attention Mechanisms</a>
+                <a href="/topic/multi-head_attention">Multi-head Attention</a>
+                <a href="/topic/positional_encoding">Positional Encoding</a>
+                <a href="/topic/encoder-decoder_architecture">Encoder-Decoder Architecture</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

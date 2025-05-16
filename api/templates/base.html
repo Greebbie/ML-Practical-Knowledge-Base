@@ -1,27 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>ML Knowledge Base</title>
-    {% include 'head.html' %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ML Practical Knowledge Base{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- MathJax for LaTeX rendering -->
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>ML Knowledge Base</h1>
-        {% for category, subcategories in topics.items() %}
-        <div class="topic-section">
-            <h2>{{ category|replace('_', ' ')|title }}</h2>
-            {% for subcategory, items in subcategories.items() %}
-            <h3>{{ subcategory|replace('_', ' ')|title }}</h3>
-            <ul class="topic-list">
-                {% for item in items %}
-                <li class="topic-item">
-                    <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-            {% endfor %}
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="/" class="logo">
+                <i class="fas fa-brain"></i> ML Practical Knowledge Base
+            </a>
+            <nav class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+                <a href="/resources"><i class="fas fa-book"></i> Resources</a>
+                <a href="/code"><i class="fas fa-code"></i> Code Examples</a>
+            </nav>
         </div>
-        {% endfor %}
-    </div>
+    </header>
+
+    <!-- Breadcrumb Section -->
+    {% block breadcrumb %}{% endblock %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- JavaScript for interactive elements -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make topics expandable
+            const topicHeaders = document.querySelectorAll('.topic-header, .concept-header');
+            
+            topicHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const listItem = header.closest('.topic-list-item, .concept-item');
+                    listItem.classList.toggle('active');
+                    
+                    // Change the icon
+                    const icon = header.querySelector('.expand-icon');
+                    if (icon) {
+                        if (listItem.classList.contains('active')) {
+                            icon.innerHTML = '▼';
+                        } else {
+                            icon.innerHTML = '▶';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html> 

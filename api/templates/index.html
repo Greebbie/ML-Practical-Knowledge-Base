@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}AI/ML Learning - Home{% endblock %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>AI/ML Learning Topics</h1>
+        <p>Explore advanced concepts, practical implementations, and real-world applications</p>
+    </div>
+</section>
+
+<!-- Main Content -->
+<div class="main-content">
+    <!-- Deep Learning Section -->
+    <section class="category">
+        <div class="category-title">
+            <i class="fas fa-network-wired"></i>
+            <h2>Deep Learning</h2>
+        </div>
+        <ul class="topic-list">
+            <!-- Fundamentals -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Fundamentals</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.deep_learning.fundamentals %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Architectures -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Architectures</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.deep_learning.architectures %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Advanced -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Advanced</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.deep_learning.advanced %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Machine Learning Section -->
+    <section class="category">
+        <div class="category-title">
+            <i class="fas fa-cogs"></i>
+            <h2>Machine Learning</h2>
+        </div>
+        <ul class="topic-list">
+            <!-- Supervised -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Supervised</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.machine_learning.supervised %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Unsupervised -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Unsupervised</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.machine_learning.unsupervised %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Reinforcement -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Reinforcement</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.machine_learning.reinforcement %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </section>
+
+    <!-- Modern AI Section -->
+    <section class="category">
+        <div class="category-title">
+            <i class="fas fa-robot"></i>
+            <h2>Modern AI</h2>
+        </div>
+        <ul class="topic-list">
+            <!-- LLMs -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>LLMs</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.modern_ai.llms %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Computer Vision -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Computer Vision</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.modern_ai.computer_vision %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Multimodal -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Multimodal</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.modern_ai.multimodal %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </section>
+</div>
+
+<!-- Math Foundations Section -->
+<div class="main-content">
+    <section class="category">
+        <div class="category-title">
+            <i class="fas fa-square-root-alt"></i>
+            <h2>Math Foundations</h2>
+        </div>
+        <ul class="topic-list">
+            <!-- Linear Algebra -->
+            <li class="topic-list-item">
+                <div class="topic-header">
+                    <i class="fas fa-circle"></i>
+                    <h3>Linear Algebra</h3>
+                    <i class="fas fa-chevron-down topic-icon"></i>
+                </div>
+                <ul class="subtopic-list">
+                    {% for item in topics.math_foundations.linear_algebra %}
+                    <li class="subtopic-item">
+                        <a href="/topic/{{ item|lower|replace(' ', '_') }}">{{ item }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <!-- Additional math topics as needed -->
+        </ul>
+    </section>
+</div>
+{% endblock %} 

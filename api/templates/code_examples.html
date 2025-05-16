@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Code Examples - AI/ML Learning{% endblock %}
+
+{% block content %}
+<div class="content-page">
+    <div class="content-wrapper">
+        <div class="topic-content">
+            <h1>Code Examples</h1>
+            
+            <div class="section-item">
+                <h2>Deep Learning</h2>
+                
+                <div class="subsection">
+                    <h3>Neural Networks with PyTorch</h3>
+                    <p>A simple feedforward neural network implementation:</p>
+                    <div class="code-block">
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
+# Define a simple neural network
+class SimpleNN(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size):
+        super(SimpleNN, self).__init__()
+        self.layer1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.layer2 = nn.Linear(hidden_size, output_size)
+    
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.relu(x)
+        x = self.layer2(x)
+        return x
+
+# Create model instance
+input_size = 10
+hidden_size = 20
+output_size = 2
+model = SimpleNN(input_size, hidden_size, output_size)
+
+# Define loss function and optimizer
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(model.parameters(), lr=0.01)
+
+# Training loop (simplified)
+def train(model, x_data, y_data, epochs=100):
+    for epoch in range(epochs):
+        # Forward pass
+        outputs = model(x_data)
+        loss = criterion(outputs, y_data)
+        
+        # Backward and optimize
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        if (epoch+1) % 10 == 0:
+            print(f'Epoch [{epoch+1}/{epochs}], Loss: {loss.item():.4f}')
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-item">
+                <h2>Machine Learning</h2>
+                
+                <div class="subsection">
+                    <h3>Classification with Scikit-learn</h3>
+                    <p>Using Random Forest for classification:</p>
+                    <div class="code-block">
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+# Generate a synthetic dataset
+X, y = make_classification(n_samples=1000, n_features=20, 
+                           n_informative=10, n_classes=2, 
+                           random_state=42)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+
+# Create and train the model
+clf = RandomForestClassifier(n_estimators=100, random_state=42)
+clf.fit(X_train, y_train)
+
+# Evaluate the model
+y_pred = clf.predict(X_test)
+print(classification_report(y_test, y_pred))
+
+# Feature importance
+feature_importances = clf.feature_importances_
+sorted_idx = np.argsort(feature_importances)[::-1]
+print("Top 5 features:")
+for i in range(5):
+    print(f"Feature {sorted_idx[i]}: {feature_importances[sorted_idx[i]]:.4f}")
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-item">
+                <h2>Modern AI</h2>
+                
+                <div class="subsection">
+                    <h3>Text Classification with Transformers</h3>
+                    <p>Using Hugging Face Transformers for sentiment analysis:</p>
+                    <div class="code-block">
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+import torch.nn.functional as F
+
+# Load pre-trained model and tokenizer
+model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name)
+
+# Example sentences
+sentences = [
+    "I love this product, it works perfectly!",
+    "This is the worst purchase I've ever made.",
+    "The quality is acceptable, but the price is too high."
+]
+
+# Tokenize and make predictions
+inputs = tokenizer(sentences, padding=True, truncation=True, return_tensors="pt")
+with torch.no_grad():
+    outputs = model(**inputs)
+    
+predictions = F.softmax(outputs.logits, dim=-1)
+
+# Process results
+for i, sentence in enumerate(sentences):
+    sentiment = "positive" if predictions[i][1] > predictions[i][0] else "negative"
+    confidence = max(predictions[i]).item()
+    print(f"Sentence: {sentence}")
+    print(f"Sentiment: {sentiment} (confidence: {confidence:.4f})")
+    print("-" * 50)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
