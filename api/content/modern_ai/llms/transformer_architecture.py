@@ -193,36 +193,220 @@ class TransformerEncoder(nn.Module):
 """,
         "interview_examples": [
             {
-                "title": "Explain the advantages of Transformers over RNNs",
-                "description": "What makes Transformers more effective than traditional RNN architectures for many NLP tasks?",
+                "title": "Implementing Self-Attention from Scratch",
+                "description": "A common interview question about implementing the attention mechanism without using PyTorch's built-in functions.",
                 "code": """
-# Advantages of Transformers over RNNs:
-# 1. Parallelization: Process all input tokens simultaneously, allowing faster training
-# 2. Long-range dependencies: Self-attention directly connects all positions, avoiding the vanishing gradient problem
-# 3. Constant path length: Information between any two positions travels through a constant number of operations
-# 4. Interpretability: Attention weights provide insights into which input tokens are important for each output token
-"""
+def self_attention_scratch(Q, K, V, mask=None):
+    # Q, K, V shape: (batch_size, seq_len, d_k)
+    # Compute attention scores
+    scores = torch.matmul(Q, K.transpose(-2, -1)) / math.sqrt(K.size(-1))
+    
+    # Apply mask if provided
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e9)
+    
+    # Apply softmax to get attention weights
+    attention_weights = torch.softmax(scores, dim=-1)
+    
+    # Apply attention weights to values
+    output = torch.matmul(attention_weights, V)
+    
+    return output, attention_weights
+                """
             },
             {
-                "title": "Implement a simple Transformer encoder",
-                "description": "How would you implement a basic Transformer encoder with multi-head attention?",
+                "title": "Implementing Multi-Head Attention from Scratch",
+                "description": "Extending the self-attention mechanism to implement multi-head attention, another common interview question.",
                 "code": """
-class TransformerEncoder(nn.Module):
-    def __init__(self, vocab_size, d_model, nhead, num_layers):
+class MultiHeadAttention(nn.Module):
+    def __init__(self, d_model, num_heads):
         super().__init__()
-        self.d_model = d_model
-        self.embedding = nn.Embedding(vocab_size, d_model)
-        self.pos_encoder = PositionalEncoding(d_model)
-        encoder_layers = nn.TransformerEncoderLayer(d_model, nhead)
-        self.transformer_encoder = nn.TransformerEncoder(encoder_layers, num_layers)
+        assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
         
-    def forward(self, src, src_mask=None):
-        # src shape: (seq_len, batch_size)
-        src = self.embedding(src) * math.sqrt(self.d_model)
-        src = self.pos_encoder(src)
-        output = self.transformer_encoder(src, src_mask)
-        return output
-"""
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads
+        
+        # Linear projections for Q, K, V
+        self.W_q = nn.Linear(d_model, d_model)
+        self.W_k = nn.Linear(d_model, d_model)
+        self.W_v = nn.Linear(d_model, d_model)
+        self.W_o = nn.Linear(d_model, d_model)
+        
+    def split_heads(self, x):
+        # x shape: (batch_size, seq_len, d_model)
+        batch_size, seq_len = x.size(0), x.size(1)
+        
+        # Reshape to (batch_size, seq_len, num_heads, d_k)
+        x = x.view(batch_size, seq_len, self.num_heads, self.d_k)
+        
+        # Transpose to (batch_size, num_heads, seq_len, d_k)
+        return x.transpose(1, 2)
+    
+    def forward(self, q, k, v, mask=None):
+        batch_size = q.size(0)
+        
+        # Linear projections
+        q = self.W_q(q)  # (batch_size, seq_len, d_model)
+        k = self.W_k(k)  # (batch_size, seq_len, d_model)
+        v = self.W_v(v)  # (batch_size, seq_len, d_model)
+        
+        # Split heads
+        q = self.split_heads(q)  # (batch_size, num_heads, seq_len, d_k)
+        k = self.split_heads(k)  # (batch_size, num_heads, seq_len, d_k)
+        v = self.split_heads(v)  # (batch_size, num_heads, seq_len, d_k)
+        
+        # Scaled dot-product attention
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.d_k)
+        
+        if mask is not None:
+            # Add extra dimensions to mask for broadcasting
+            mask = mask.unsqueeze(1)  # (batch_size, 1, seq_len, seq_len)
+            scores = scores.masked_fill(mask == 0, -1e9)
+        
+        attention_weights = torch.softmax(scores, dim=-1)
+        context = torch.matmul(attention_weights, v)  # (batch_size, num_heads, seq_len, d_k)
+        
+        # Transpose and reshape back
+        context = context.transpose(1, 2).contiguous()  # (batch_size, seq_len, num_heads, d_k)
+        context = context.view(batch_size, -1, self.d_model)  # (batch_size, seq_len, d_model)
+        
+        # Final linear projection
+        output = self.W_o(context)
+        
+        return output, attention_weights
+                """
+            },
+            {
+                "title": "Creating a Causal Mask for Decoder Self-Attention",
+                "description": "How to implement a causal mask to prevent attending to future positions, crucial for autoregressive generation.",
+                "code": """
+def generate_causal_mask(seq_len, device="cpu"):
+    # Create a square mask with ones on and below the diagonal, zeros elsewhere
+    mask = torch.triu(torch.ones(seq_len, seq_len), diagonal=1).bool()
+    
+    # Invert the mask: 1s are positions to keep, 0s are positions to mask
+    mask = ~mask
+    
+    # Move to device and add batch dimension for broadcasting
+    return mask.to(device).unsqueeze(0)  # (1, seq_len, seq_len)
+
+# Example usage:
+seq_len = 5
+causal_mask = generate_causal_mask(seq_len)
+print(causal_mask[0])
+
+# Output:
+# tensor([[ True, False, False, False, False],
+#         [ True,  True, False, False, False],
+#         [ True,  True,  True, False, False],
+#         [ True,  True,  True,  True, False],
+#         [ True,  True,  True,  True,  True]])
+                """
+            },
+            {
+                "title": "Visualizing Attention Patterns",
+                "description": "How to extract and visualize attention patterns, useful for model interpretability and debugging.",
+                "code": """
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+def visualize_attention(model, tokenizer, sentence, layer_idx=0, head_idx=0):
+    # Tokenize input
+    tokens = tokenizer.tokenize(sentence)
+    input_ids = tokenizer.encode(sentence, return_tensors="pt")
+    
+    # Forward pass with output_attentions=True
+    with torch.no_grad():
+        outputs = model(input_ids, output_attentions=True)
+    
+    # Extract attention weights from specified layer and head
+    # Shape: (batch_size, num_heads, seq_len, seq_len)
+    attention = outputs.attentions[layer_idx][0, head_idx].cpu().numpy()
+    
+    # Plot attention matrix
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(attention, 
+                xticklabels=tokens, 
+                yticklabels=tokens, 
+                cmap="viridis", 
+                annot=True)
+    plt.title(f"Attention Matrix (Layer {layer_idx}, Head {head_idx})")
+    plt.xlabel("Key")
+    plt.ylabel("Query")
+    plt.tight_layout()
+    plt.show()
+
+# Example usage (with a hypothetical model and tokenizer):
+# visualize_attention(model, tokenizer, "The transformer architecture is powerful.")
+                """
+            },
+            {
+                "title": "Implementing Flash Attention for Memory Efficiency",
+                "description": "Optimizing attention computation for long sequences using the Flash Attention approach.",
+                "code": """
+def flash_attention(Q, K, V, mask=None, chunk_size=4096):
+    """
+    Memory-efficient attention implementation for long sequences.
+    Processes attention in chunks to reduce memory usage.
+    
+    Args:
+        Q, K, V: Query, Key, Value tensors (batch_size, seq_len, d_k)
+        mask: Optional mask tensor (batch_size, seq_len, seq_len)
+        chunk_size: Size of chunks to process at once
+    """
+    batch_size, seq_len, d_k = Q.size()
+    
+    # Initialize output and attention weights
+    output = torch.zeros_like(Q)
+    attention_weights = torch.zeros(batch_size, seq_len, seq_len, device=Q.device)
+    
+    # Process in chunks to save memory
+    for i in range(0, seq_len, chunk_size):
+        # Get current chunk of queries
+        q_chunk = Q[:, i:i+chunk_size, :]
+        chunk_len = q_chunk.size(1)
+        
+        for j in range(0, seq_len, chunk_size):
+            # Get current chunk of keys and values
+            k_chunk = K[:, j:j+chunk_size, :]
+            v_chunk = V[:, j:j+chunk_size, :]
+            
+            # Compute chunk of attention scores
+            scores = torch.bmm(q_chunk, k_chunk.transpose(1, 2)) / math.sqrt(d_k)
+            
+            # Apply mask if provided
+            if mask is not None:
+                chunk_mask = mask[:, i:i+chunk_size, j:j+chunk_size]
+                scores = scores.masked_fill(chunk_mask == 0, -1e9)
+            
+            # Store attention weights for visualization
+            attention_weights[:, i:i+chunk_size, j:j+chunk_size] = torch.softmax(scores, dim=-1)
+            
+            # For output computation, we need to normalize across all chunks
+            if j == 0:
+                # First chunk - initialize max values and weights
+                max_scores = scores.max(dim=-1, keepdim=True)[0]
+                exp_scores = torch.exp(scores - max_scores)
+                exp_weights_sum = exp_scores.sum(dim=-1, keepdim=True)
+                weighted_values = torch.bmm(exp_scores, v_chunk)
+            else:
+                # Update max values and weights with new chunk
+                new_max_scores = torch.max(max_scores, scores.max(dim=-1, keepdim=True)[0])
+                exp_scores_old = exp_scores * torch.exp(max_scores - new_max_scores)
+                exp_scores_new = torch.exp(scores - new_max_scores)
+                
+                exp_weights_sum = exp_weights_sum * torch.exp(max_scores - new_max_scores) + exp_scores_new.sum(dim=-1, keepdim=True)
+                weighted_values = weighted_values * torch.exp(max_scores - new_max_scores) + torch.bmm(exp_scores_new, v_chunk)
+                
+                max_scores = new_max_scores
+                exp_scores = exp_scores_new
+                
+        # Compute final output for current query chunk
+        output[:, i:i+chunk_size, :] = weighted_values / exp_weights_sum
+        
+    return output, attention_weights
+                """
             }
         ],
         "resources": [
