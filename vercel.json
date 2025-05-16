@@ -10,7 +10,7 @@
       }
     },
     {
-      "src": "public/**",
+      "src": "public/static/**",
       "use": "@vercel/static"
     }
   ],

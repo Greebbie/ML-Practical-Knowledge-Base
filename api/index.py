@@ -26,13 +26,10 @@ except ImportError:
 IS_VERCEL = os.environ.get('VERCEL') == '1'
 
 if IS_VERCEL:
-    # On Vercel, Flask should not handle static files.
-    # Vercel's routing rules (in vercel.json) will serve them from the 'public' directory.
-    app = Flask(__name__)
+    # On Vercel, explicitly set the static folder and URL path
+    app = Flask(__name__, static_folder='../public/static', static_url_path='/static')
 else:
-    # For local development, Flask needs to serve static files.
-    # The 'public' directory is at the project root, so relative to 'api/index.py',
-    # the static folder is '../public'. The URL path remains '/static'.
+    # For local development
     app = Flask(__name__, static_url_path='/static', static_folder='../public/static')
 
 # Content structure
