@@ -4,30 +4,8 @@ import random
 import traceback
 from flask import Flask, render_template, redirect, url_for, request, abort, send_from_directory, jsonify
 
-# Add the parent directory to the path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
-
-# Add content module import, handle both local and Vercel environments
-try:
-    # First try direct import
-    import content
-    from content import load_content, load_topic_content
-except ImportError:
-    try:
-        # Try importing from api package
-        from api.content import load_content, load_topic_content
-    except ImportError:
-        try:
-            # For local development
-            sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            # Import directly from content.py in the same directory
-            from content import load_content, load_topic_content  
-        except ImportError:
-            # Last resort - import directly from content.py in the same directory
-            from .content import load_content, load_topic_content
+# Simple import for Vercel - this is the only one that should be needed
+from api.content import load_content, load_topic_content
 
 app = Flask(__name__)
 
