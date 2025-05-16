@@ -2,8 +2,11 @@ from flask import Flask, render_template, request
 import numpy as np
 import pandas as pd
 from content import load_topic_content
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, 
+           static_url_path='/static', 
+           static_folder='static')
 
 # Content structure
 topics = {
