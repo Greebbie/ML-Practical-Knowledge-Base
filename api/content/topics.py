@@ -32,11 +32,11 @@ def _get_topic_path(topic_name):
     # Mapping of topic names to their category paths
     topic_mapping = {
         # Deep Learning
-        'transformer_architecture': 'deep_learning/architectures/transformer',
         'neural_networks': 'deep_learning/fundamentals/neural_networks',
         'backpropagation': 'deep_learning/fundamentals/backpropagation',
         
         # Modern AI
+        'transformer_architecture': 'modern_ai/llms/transformer_architecture',
         'lora_implementation': 'modern_ai/llms/lora',
         'attention_mechanisms': 'modern_ai/llms/attention',
         

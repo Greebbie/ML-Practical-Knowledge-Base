@@ -25,7 +25,13 @@
                 <h2>Overview</h2>
             </div>
             <div class="section-content">
-                <p>{{ content[0].description|safe }}</p>
+                {% if overview %}
+                    {{ overview|safe }}
+                {% elif content %}
+                    <p>{{ content[0].description|safe }}</p>
+                {% else %}
+                    <p>{{ title }} is an important topic in machine learning and artificial intelligence.</p>
+                {% endif %}
             </div>
         </div>
         
@@ -37,34 +43,72 @@
             </div>
             <div class="section-content">
                 <ul class="concept-list">
-                    {% for section in content %}
-                    {% if section.subsections %}
-                    {% for subsection in section.subsections %}
-                    <li class="concept-item">
-                        <div class="concept-header">
-                            <i class="fas fa-circle"></i>
-                            <h3>{{ subsection.title }}</h3>
-                            <span class="expand-icon">▶</span>
-                        </div>
-                        <div class="concept-content">
-                            {{ subsection.content|safe }}
-                            
-                            {% if subsection.math %}
-                            <div class="formula">
-                                $$ {{ subsection.math }} $$
+                    {% if core_concepts %}
+                        {% for concept in core_concepts %}
+                            <li class="concept-item">
+                                <div class="concept-header">
+                                    <i class="fas fa-circle"></i>
+                                    <h3>{{ concept.title }}</h3>
+                                    <span class="expand-icon">▶</span>
+                                </div>
+                                <div class="concept-content">
+                                    {{ concept.content|safe }}
+                                    
+                                    {% if concept.formula %}
+                                    <div class="formula">
+                                        $$ {{ concept.formula }} $$
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if concept.code %}
+                                    <div class="code-block">
+{{ concept.code }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    {% elif content %}
+                        {% for section in content %}
+                        {% if section.subsections %}
+                        {% for subsection in section.subsections %}
+                        <li class="concept-item">
+                            <div class="concept-header">
+                                <i class="fas fa-circle"></i>
+                                <h3>{{ subsection.title }}</h3>
+                                <span class="expand-icon">▶</span>
                             </div>
-                            {% endif %}
-                            
-                            {% if subsection.code %}
-                            <div class="code-block">
+                            <div class="concept-content">
+                                {{ subsection.content|safe }}
+                                
+                                {% if subsection.math %}
+                                <div class="formula">
+                                    $$ {{ subsection.math }} $$
+                                </div>
+                                {% endif %}
+                                
+                                {% if subsection.code %}
+                                <div class="code-block">
 {{ subsection.code }}
+                                </div>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                        </div>
-                    </li>
-                    {% endfor %}
+                        </li>
+                        {% endfor %}
+                        {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <li class="concept-item">
+                            <div class="concept-header">
+                                <i class="fas fa-circle"></i>
+                                <h3>Key Concept</h3>
+                                <span class="expand-icon">▶</span>
+                            </div>
+                            <div class="concept-content">
+                                <p>No detailed concepts available for this topic yet.</p>
+                            </div>
+                        </li>
                     {% endif %}
-                    {% endfor %}
                 </ul>
             </div>
         </div>
@@ -76,17 +120,25 @@
                 <h2>Implementation</h2>
             </div>
             <div class="implementation-content">
-                {% for section in content %}
-                {% if section.title == 'Implementation Approaches' %}
-                {% for subsection in section.subsections %}
-                {% if subsection.code %}
-                <div class="code-block">
+                {% if implementation_code %}
+                    <div class="code-block">
+{{ implementation_code }}
+                    </div>
+                {% elif content %}
+                    {% for section in content %}
+                    {% if section.title == 'Implementation Approaches' %}
+                    {% for subsection in section.subsections %}
+                    {% if subsection.code %}
+                    <div class="code-block">
 {{ subsection.code }}
-                </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p>Implementation examples coming soon.</p>
                 {% endif %}
-                {% endfor %}
-                {% endif %}
-                {% endfor %}
             </div>
         </div>
         

@@ -53,7 +53,40 @@ def home():
 @app.route('/topic/<topic_name>')
 def topic(topic_name):
     try:
-        # Load topic content
+        # Format title
+        title = topic_name.replace('_', ' ').title()
+        
+        # Load specific content first directly from topics.py using the old content loader
+        old_content = None
+        try:
+            old_content = load_topic_content(topic_name)
+        except Exception as e:
+            app.logger.error(f"Error loading old topic format: {str(e)}")
+        
+        # Check if we get the new format with core_concepts directly
+        if old_content and isinstance(old_content, dict) and 'core_concepts' in old_content:
+            # Use the new format
+            core_concepts = old_content['core_concepts']
+            overview = old_content.get('overview', '')
+            implementation_code = old_content.get('implementation_code', '')
+            interview_examples = old_content.get('interview_examples', [])
+            resources = old_content.get('resources', [])
+            related_topics = old_content.get('related_topics', [])
+            
+            # Generate questions related to the topic
+            questions = generate_questions(topic_name, 3)
+            
+            return render_template('topic.html', 
+                                  title=title,
+                                  overview=overview,
+                                  core_concepts=core_concepts,
+                                  implementation_code=implementation_code,
+                                  questions=questions,
+                                  resources=resources,
+                                  interview_examples=interview_examples,
+                                  related_topics=related_topics)
+        
+        # Use the old fallback structure
         content = load_content(topic_name)
         if not content:
             return render_template('error.html', message=f"Topic '{topic_name}' not found"), 404
@@ -67,31 +100,24 @@ def topic(topic_name):
         resources = []
         
         # Try to load from old format if needed
-        try:
-            old_content = load_topic_content(topic_name)
-            if isinstance(old_content, dict):
-                interview_examples = old_content.get('interview_examples', [])
-                related_topics = old_content.get('related_topics', [])
-                
-                # Use resources from old format if available
-                if 'resources' in old_content:
-                    resources = [
-                        {"title": item['title'], "url": item['url']} 
-                        for item in old_content['resources']
-                    ]
-        except Exception:
-            pass
+        if isinstance(old_content, dict):
+            interview_examples = old_content.get('interview_examples', [])
+            related_topics = old_content.get('related_topics', [])
+            
+            # Use resources from old format if available
+            if 'resources' in old_content:
+                resources = [
+                    {"title": item['title'], "url": item['url']} 
+                    for item in old_content['resources']
+                ]
         
         # If no resources were set yet, use example resources
         if not resources:
             resources = [
-                {"title": f"Official {topic_name.replace('_', ' ').title()} Documentation", "url": f"https://docs.example.com/{topic_name}"},
-                {"title": f"Tutorial: Understanding {topic_name.replace('_', ' ').title()}", "url": f"https://tutorials.example.com/{topic_name}"},
-                {"title": f"Research Paper on {topic_name.replace('_', ' ').title()}", "url": f"https://papers.example.com/{topic_name}.pdf"}
+                {"title": f"Official {title} Documentation", "url": f"https://docs.example.com/{topic_name}"},
+                {"title": f"Tutorial: Understanding {title}", "url": f"https://tutorials.example.com/{topic_name}"},
+                {"title": f"Research Paper on {title}", "url": f"https://papers.example.com/{topic_name}.pdf"}
             ]
-        
-        # Format title
-        title = topic_name.replace('_', ' ').title()
         
         return render_template('topic.html', 
                               title=title,

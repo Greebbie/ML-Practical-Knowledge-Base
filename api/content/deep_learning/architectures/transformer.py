@@ -1,73 +1,71 @@
 def get_content():
     """Return the content for the Transformer Architecture topic."""
     return {
-        "section": [
-            {
-                "title": "Transformer Architecture Overview",
-                "description": """
-                <p>The Transformer is a model architecture that relies entirely on attention mechanisms
-                to draw global dependencies between input and output. It was introduced in the paper
-                "Attention Is All You Need" and has become the foundation for most modern NLP systems.</p>
-                <p>Key components:</p>
-                <ul>
-                    <li>Self-Attention Mechanism</li>
-                    <li>Multi-Head Attention</li>
-                    <li>Positional Encoding</li>
-                    <li>Feed-Forward Networks</li>
-                    <li>Layer Normalization</li>
-                    <li>Residual Connections</li>
-                </ul>
-                """,
-                "formula": "\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V"
-            },
+        "overview": """
+        <p>The Transformer is a model architecture that relies entirely on attention mechanisms
+        to draw global dependencies between input and output. It was introduced in the paper
+        "Attention Is All You Need" and has become the foundation for most modern NLP systems.</p>
+        
+        <p>Unlike previous sequence models that relied on recurrence or convolution, Transformers
+        use a mechanism called self-attention to process input sequences in parallel, leading to
+        significant improvements in both training efficiency and performance on various tasks.</p>
+        """,
+        "core_concepts": [
             {
                 "title": "Self-Attention Mechanism",
-                "description": """
+                "content": """
                 <p>The self-attention mechanism is the core innovation of the Transformer architecture. It allows the model to
                 weigh the importance of different words in a sequence when processing each word.</p>
+                
                 <p>Key components:</p>
                 <ul>
                     <li><strong>Query (Q)</strong>: What we're looking for</li>
                     <li><strong>Key (K)</strong>: What we're matching against</li>
                     <li><strong>Value (V)</strong>: The actual content we want to extract</li>
                 </ul>
+                
                 <p>The attention mechanism computes a weighted sum of values, where the weights are determined by the compatibility between the query and keys.</p>
                 """,
                 "formula": "\\text{Attention}(Q, K, V) = \\text{softmax}\\left(\\frac{QK^T}{\\sqrt{d_k}}\\right)V"
             },
             {
                 "title": "Multi-Head Attention",
-                "description": """
+                "content": """
                 <p>Multi-head attention allows the model to jointly attend to information from different positions and representation subspaces. Instead of performing a single attention function, the model projects the queries, keys, and values into different subspaces and performs attention in parallel.</p>
+                
                 <p>This allows the model to capture different types of relationships between words:</p>
                 <ul>
                     <li>Syntactic relationships</li>
                     <li>Semantic relationships</li>
                     <li>Contextual dependencies</li>
                 </ul>
+                
                 <p>The outputs from different attention heads are concatenated and linearly transformed to produce the final result.</p>
                 """,
                 "formula": "\\text{MultiHead}(Q,K,V) = \\text{Concat}(\\text{head}_1, \\text{head}_2, ..., \\text{head}_h)W^O \\\\\\text{where } \\text{head}_i = \\text{Attention}(QW_i^Q, KW_i^K, VW_i^V)"
             },
             {
                 "title": "Positional Encoding",
-                "description": """
+                "content": """
                 <p>Since Transformers don't have inherent understanding of sequence order, positional encodings are added
                 to give the model information about the relative or absolute position of tokens in the sequence.</p>
+                
                 <p>Key features:</p>
                 <ul>
                     <li>Uses sine and cosine functions of different frequencies</li>
                     <li>Allows the model to generalize to sequences of different lengths</li>
                     <li>Enables the model to learn relative positions</li>
                 </ul>
+                
                 <p>Example: In the sequence 'I love AI', the positional encoding helps distinguish between 'I love AI' and 'AI love I'.</p>
                 """,
                 "formula": "PE_{(pos, 2i)} = \\sin\\left(\\frac{pos}{10000^{2i/d_{\\text{model}}}}\\right) \\\\PE_{(pos, 2i+1)} = \\cos\\left(\\frac{pos}{10000^{2i/d_{\\text{model}}}}\\right)"
             },
             {
                 "title": "Feed-Forward Networks",
-                "description": """
+                "content": """
                 <p>Each Transformer layer contains a position-wise feed-forward neural network that is applied to each position in the sequence independently. This network consists of two linear transformations with a ReLU activation in between.</p>
+                
                 <p>The feed-forward network allows the model to:</p>
                 <ul>
                     <li>Process features from attention mechanisms</li>
@@ -79,32 +77,36 @@ def get_content():
             },
             {
                 "title": "Layer Normalization",
-                "description": """
+                "content": """
                 <p>Layer normalization is applied after each sub-layer in the Transformer (after attention and after feed-forward network). It helps stabilize training by normalizing the inputs across the features.</p>
+                
                 <p>Layer normalization:</p>
                 <ul>
                     <li>Computes the mean and variance across the feature dimension</li>
                     <li>Normalizes each example independently</li>
                     <li>Applies learned scaling and shifting parameters</li>
                 </ul>
+                
                 <p>This contrasts with batch normalization, which normalizes across the batch dimension.</p>
                 """,
                 "formula": "\\text{LayerNorm}(x) = \\gamma \\frac{x - \\mu}{\\sqrt{\\sigma^2 + \\epsilon}} + \\beta"
             },
             {
                 "title": "Residual Connections",
-                "description": """
+                "content": """
                 <p>Residual connections (or skip connections) are used around each sub-layer in the Transformer. They help with the flow of gradients through the network, enabling training of deeper models.</p>
+                
                 <p>The output of each sub-layer is:</p>
                 <ul>
                     <li>LayerNorm(x + Sublayer(x))</li>
                 </ul>
+                
                 <p>Where Sublayer(x) is the function implemented by the sub-layer itself (attention or feed-forward network).</p>
                 """,
                 "formula": "\\text{Output} = \\text{LayerNorm}(x + \\text{Sublayer}(x))"
             }
         ],
-        "implementation": """
+        "implementation_code": """
 import torch
 import torch.nn as nn
 import math
