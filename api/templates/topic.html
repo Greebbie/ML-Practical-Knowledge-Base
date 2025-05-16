@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>{{ topic_name|replace('_', ' ')|title }} - ML Knowledge Base</title>
-    <link rel="stylesheet" href="/static/style.css">
+    {% include 'head.html' %}
     <style>
         .code-block {
             background-color: #f4f4f4;
