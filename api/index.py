@@ -1,12 +1,18 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 import numpy as np
 import pandas as pd
 from content import load_topic_content
 import os
 
-app = Flask(__name__, 
-           static_url_path='/static', 
-           static_folder='static')
+# 检测是否在 Vercel 环境中运行
+in_vercel = os.environ.get('VERCEL') == '1'
+
+if in_vercel:
+    # Vercel 环境中，static_folder 设置不生效，而是通过 vercel.json 的路由规则处理
+    app = Flask(__name__, static_url_path=None)
+else:
+    # 本地环境中，使用标准 Flask 静态文件处理
+    app = Flask(__name__, static_url_path='/static', static_folder='static')
 
 # Content structure
 topics = {
